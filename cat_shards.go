@@ -22,10 +22,11 @@ import (
 type CatShardsService struct {
 	client *Client
 
-	pretty     *bool    // pretty format the returned JSON response
-	human      *bool    // return human readable values for statistics
-	errorTrace *bool    // include the stack trace of returned errors
-	filterPath []string // list of filters used to reduce the response
+	pretty            *bool    // pretty format the returned JSON response
+	human             *bool    // return human readable values for statistics
+	errorTrace        *bool    // include the stack trace of returned errors
+	filterPath        []string // list of filters used to reduce the response
+	ignoreUnavailable *bool
 
 	index         []string
 	bytes         string // b, k, kb, m, mb, g, gb, t, tb, p, or pb
@@ -116,7 +117,8 @@ func (s *CatShardsService) MasterTimeout(masterTimeout string) *CatShardsService
 // in your terminal:
 //
 // Example:
-//   curl 'http://localhost:9200/_cat/shards?help'
+//
+//	curl 'http://localhost:9200/_cat/shards?help'
 //
 // You can use Columns("*") to return all possible columns. That might take
 // a little longer than the default set of columns.
@@ -134,6 +136,11 @@ func (s *CatShardsService) Sort(fields ...string) *CatShardsService {
 // Time specifies the way that time values are formatted with.
 func (s *CatShardsService) Time(time string) *CatShardsService {
 	s.time = time
+	return s
+}
+
+func (s *IndicesStatsService) IgnoreUnavailable(ignoreUnavailable bool) *IndicesStatsService {
+	s.ignoreUnavailable = &ignoreUnavailable
 	return s
 }
 
@@ -183,6 +190,9 @@ func (s *CatShardsService) buildURL() (string, url.Values, error) {
 	}
 	if s.masterTimeout != "" {
 		params.Set("master_timeout", s.masterTimeout)
+	}
+	if v := s.ignoreUnavailable; v != nil {
+		params.Set("ignore_unavailable", fmt.Sprint(*v))
 	}
 	if len(s.columns) > 0 {
 		// loop through all columns and apply alias if needed
