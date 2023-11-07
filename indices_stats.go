@@ -25,14 +25,15 @@ type IndicesStatsService struct {
 	filterPath []string    // list of filters used to reduce the response
 	headers    http.Header // custom request-level HTTP headers
 
-	metric           []string
-	index            []string
-	level            string
-	types            []string
-	completionFields []string
-	fielddataFields  []string
-	fields           []string
-	groups           []string
+	metric            []string
+	index             []string
+	level             string
+	types             []string
+	completionFields  []string
+	fielddataFields   []string
+	fields            []string
+	groups            []string
+	ignoreUnavailable *bool
 }
 
 // NewIndicesStatsService creates a new IndicesStatsService.
@@ -142,6 +143,11 @@ func (s *IndicesStatsService) Groups(groups ...string) *IndicesStatsService {
 	return s
 }
 
+func (s *IndicesStatsService) IgnoreUnavailable(ignoreUnavailable bool) *IndicesStatsService {
+	s.ignoreUnavailable = &ignoreUnavailable
+	return s
+}
+
 // buildURL builds the URL for the operation.
 func (s *IndicesStatsService) buildURL() (string, url.Values, error) {
 	var err error
@@ -197,6 +203,9 @@ func (s *IndicesStatsService) buildURL() (string, url.Values, error) {
 	}
 	if len(s.fields) > 0 {
 		params.Set("fields", strings.Join(s.fields, ","))
+	}
+	if v := s.ignoreUnavailable; v != nil {
+		params.Set("ignore_unavailable", fmt.Sprint(*v))
 	}
 	return path, params, nil
 }
