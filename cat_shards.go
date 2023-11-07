@@ -139,7 +139,7 @@ func (s *CatShardsService) Time(time string) *CatShardsService {
 	return s
 }
 
-func (s *IndicesStatsService) IgnoreUnavailable(ignoreUnavailable bool) *IndicesStatsService {
+func (s *CatShardsService) IgnoreUnavailable(ignoreUnavailable bool) *CatShardsService {
 	s.ignoreUnavailable = &ignoreUnavailable
 	return s
 }
